@@ -69,7 +69,7 @@ func (h *Hopper) Insert(colName string, data M) (uuid.UUID, error) {
 	if err := bucket.Put([]byte("id"), []byte(id.String())); err != nil {
 		return id, err
 	}
-	return id, nil
+	return id, tx.Commit()
 }
 
 func (h *Hopper) Select(coll string, k string, query any) {
