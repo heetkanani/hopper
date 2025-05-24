@@ -31,69 +31,47 @@ func New() (*Hopper, error) {
 	}, nil
 }
 
-func (h *Hopper) CreateColledtion(name string) (*Collection, error) {
-	coll := Collection{}
-	err := h.db.Update(func(tx *bbolt.Tx) error {
-		var (
-			err    error
-			bucket *bbolt.Bucket
-		)
-		bucket = tx.Bucket([]byte(name))
-		if bucket == nil {
-			bucket, err = tx.CreateBucket([]byte(name))
-			if err != nil {
-				return err
-			}
-		}
-
-		coll.Bucket = bucket
-		return nil
-	})
-
+func (h *Hopper) CreateCollection(name string) (*Collection, error) {
+	tx, err := h.db.Begin(true)
 	if err != nil {
 		return nil, err
 	}
-	return &coll, nil
+	defer tx.Rollback()
+
+	bucket, err := tx.CreateBucketIfNotExists([]byte(name))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Collection{Bucket: bucket}, nil
 }
 
 func (h *Hopper) Insert(colName string, data M) (uuid.UUID, error) {
 	id := uuid.New()
-	coll, err := h.CreateColledtion(colName)
 
+	tx, err := h.db.Begin(true)
 	if err != nil {
 		return id, err
 	}
-	h.db.Update(func(tx *bbolt.Tx) error {
-		for k, v := range data {
-			if err := coll.Put([]byte(k), []byte(v)); err != nil {
-				return err
-			}
-		}
 
-		if err := coll.Put([]byte("id"), []byte(id.String())); err != nil {
-			return err
-		}
-		return nil
-	})
+	defer tx.Rollback()
 
+	bucket, err := tx.CreateBucketIfNotExists([]byte(colName))
+	if err != nil {
+		return id, err
+	}
+	for k, v := range data {
+		if err := bucket.Put([]byte(k), []byte(v)); err != nil {
+			return id, err
+		}
+	}
+
+	if err := bucket.Put([]byte("id"), []byte(id.String())); err != nil {
+		return id, err
+	}
 	return id, nil
-
 }
 
 func (h *Hopper) Select(coll string, k string, query any) {
 
 }
-
-// db.Update(func(tx *bbolt.Tx) error {
-// 		id := uuid.New()
-// 		for k, v := range user {
-// 			if err := bucket.Put([]byte(k), []byte(v)); err != nil {
-// 				return err
-// 			}
-// 		}
-
-// 		if err := bucket.Put([]byte("id"), []byte(id.String())); err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
