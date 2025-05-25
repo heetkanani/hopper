@@ -2,7 +2,7 @@
 
 **Hopper** is a lightweight, in-memory key-value database built in **Go**. It functions like a minimalist NoSQL store, enabling you to insert and retrieve data with a simple, intuitive API. Ideal for quick prototyping or small-scale embedded use cases.
 
-## 🚀 Features
+## Features
 
 - Built entirely in Go
 - In-memory storage (fast and dependency-free)
@@ -10,7 +10,7 @@
 - Auto-generated unique record IDs
 - Minimal and idiomatic Go API
 
-## 🛠️ Installation
+## Installation
 
 ```bash
 go get github.com/heetkanani/hopper
