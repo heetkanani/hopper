@@ -72,6 +72,17 @@ func (h *Hopper) Insert(colName string, data M) (uuid.UUID, error) {
 	return id, tx.Commit()
 }
 
-func (h *Hopper) Select(coll string, k string, query any) {
+func (h *Hopper) Select(coll string, query M) (M, error) {
+	tx, err := h.db.Begin(false)
+	if err != nil {
+		return nil, err
+	}
 
+	bucket := tx.Bucket([]byte(coll))
+	if bucket == nil {
+		return nil, fmt.Errorf("Collection (%s) not found", coll)
+
+	}
+
+	return nil, err
 }
